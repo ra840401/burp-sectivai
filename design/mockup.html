@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sectiv — redesign concept</title>
+<style>
+  :root {
+    --bg:#0b0f12;
+    --bg-deep:#080b0d;
+    --surface:#12171c;
+    --surface-2:#161d23;
+    --surface-3:#1b242c;
+    --surface-hover:#202a33;
+    --line:#242e37;
+    --line-soft:#1b232a;
+    --line-strong:#33404b;
+    --text:#f4f6f5;
+    --text-soft:#d7dee3;
+    --muted:#8d99a4;
+    --faint:#5d6973;
+    --accent:#f47832;
+    --accent-hover:#ff8a4c;
+    --accent-ink:#1d1008;
+    --accent-soft:rgba(244,120,50,.12);
+    --critical:#ff5d5d;
+    --high:#ff9f43;
+    --medium:#f4c95d;
+    --low:#4ade80;
+    --info:#91a0ad;
+    --blue:#6ea8fe;
+    --radius:14px;
+    --mono:ui-monospace,"JetBrains Mono","SFMono-Regular","DejaVu Sans Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;overflow:hidden;background:var(--bg);color:var(--text);
+    font:400 13.5px/1.45 Inter,"Inter Display","Segoe UI",system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  button,input,select,textarea{font:inherit;color:inherit}
+  button{cursor:pointer}
+  .app{
+    position:relative;display:flex;flex-direction:column;height:100vh;min-height:760px;
+    background:
+      radial-gradient(1100px 520px at 14% -12%,rgba(244,120,50,.065),transparent 62%),
+      radial-gradient(900px 440px at 92% -18%,rgba(110,168,254,.035),transparent 66%),
+      var(--bg);
+  }
+  .app:before{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.38;
+    background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+    background-size:52px 52px;
+    -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 58%);
+            mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 58%);
+  }
+  .topbar{
+    position:relative;z-index:2;height:70px;flex:0 0 70px;display:flex;align-items:center;gap:20px;
+    padding:0 22px;border-bottom:1px solid var(--line-soft);background:rgba(11,15,18,.82);
+    backdrop-filter:blur(10px);
+  }
+  .brand{display:flex;align-items:center;gap:12px;min-width:190px}
+  .logo{width:38px;height:38px;border-radius:11px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 8px 22px rgba(0,0,0,.35);flex:0 0 auto}
+  .logo svg{display:block;width:100%;height:100%}
+  .brand-name{font-size:18px;font-weight:650;letter-spacing:-.025em;line-height:1.1}
+  .brand-sub{font-size:10.5px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
+  .nav{display:flex;align-items:center;gap:3px;padding:4px;border:1px solid var(--line-soft);background:rgba(18,23,28,.8);border-radius:12px}
+  .nav button{
+    display:flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--muted);
+    padding:8px 13px;border-radius:9px;font-weight:520;font-size:12.5px;letter-spacing:-.005em;
+    transition:background .16s,color .16s,box-shadow .16s;
+  }
+  .nav button:hover{color:var(--text-soft);background:rgba(255,255,255,.035)}
+  .nav button.active{color:var(--text);background:var(--surface-3);box-shadow:inset 0 0 0 1px var(--line),0 4px 14px rgba(0,0,0,.18)}
+  .nav button.active:after{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px rgba(244,120,50,.7)}
+  .nav .count{font:500 10px/1 var(--mono);color:var(--muted);background:rgba(255,255,255,.055);border:1px solid var(--line-soft);padding:3px 5px;border-radius:5px}
+  .spacer{flex:1}
+  .provider-chip{
+    display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;border:1px solid var(--line);
+    background:rgba(18,23,28,.72);border-radius:9px;font-size:11.5px;color:var(--text-soft);
+  }
+  .provider-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px rgba(244,120,50,.55)}
+  .provider-chip .muted{color:var(--faint);font-family:var(--mono);font-size:10.5px}
+  .provider-chip .chev{width:5px;height:5px;border-right:1px solid var(--muted);border-bottom:1px solid var(--muted);transform:rotate(45deg);margin-left:2px;margin-top:-2px}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;height:34px;padding:0 13px;border-radius:9px;
+    border:1px solid var(--line);background:var(--surface-2);color:var(--text-soft);font-weight:550;font-size:12px;
+    transition:background .16s,border-color .16s,color .16s,transform .12s;
+  }
+  .btn:hover{background:var(--surface-hover);border-color:var(--line-strong);color:var(--text)}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:650}
+  .btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+  .btn.ghost{background:transparent;border-color:var(--line)}
+  .btn.small{height:29px;padding:0 10px;font-size:11px;border-radius:7px}
+  .btn.danger{color:#ff8e8e;border-color:rgba(255,93,93,.3);background:rgba(255,93,93,.06)}
+  .icon{width:14px;height:14px;display:block;flex:0 0 auto}
+  .content{position:relative;z-index:1;flex:1;min-height:0;overflow:auto;padding:20px 22px 24px}
+  .page{display:none;height:100%;min-height:0}
+  .page.active{display:flex;flex-direction:column;gap:16px}
+  .page-head{display:flex;align-items:flex-end;gap:16px;min-height:58px;flex:0 0 auto;padding:1px 2px 0}
+  .eyebrow{font:600 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);opacity:.9;margin-bottom:8px}
+  .page-head h1{margin:0;font-size:26px;line-height:1.05;font-weight:650;letter-spacing:-.035em;color:var(--text)}
+  .page-head .sub{margin-top:7px;color:var(--muted);font-size:12px}
+  .head-actions{margin-left:auto;display:flex;align-items:center;gap:8px;padding-bottom:1px}
+  .panel{
+    border:1px solid var(--line);border-radius:var(--radius);
+    background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,0) 32%),var(--surface);
+    box-shadow:0 18px 44px rgba(0,0,0,.16);
+  }
+  .severity-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;flex:0 0 auto}
+  .sev-card{
+    position:relative;overflow:hidden;text-align:left;border:1px solid var(--line);border-radius:13px;padding:15px 16px 13px;
+    background:linear-gradient(180deg,rgba(255,255,255,.032),rgba(255,255,255,0) 56%),var(--surface);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 10px 24px rgba(0,0,0,.12);
+    transition:border-color .2s,background .2s,transform .18s;
+  }
+  .sev-card:after{
+    content:"";position:absolute;width:150px;height:90px;right:-55px;top:-52px;border-radius:50%;
+    background:radial-gradient(circle,var(--sev),transparent 68%);opacity:.10;pointer-events:none;
+  }
+  .sev-card:hover{border-color:var(--line-strong);background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,0) 56%),var(--surface-2);transform:translateY(-1px)}
+  .sev-head{display:flex;align-items:center;gap:8px}
+  .sev-dot{width:7px;height:7px;border-radius:50%;background:var(--sev);box-shadow:0 0 10px color-mix(in srgb,var(--sev) 60%,transparent)}
+  .sev-name{font-size:10px;letter-spacing:.11em;text-transform:uppercase;font-weight:650;color:var(--sev)}
+  .spark{margin-left:auto;display:flex;align-items:flex-end;gap:2px;height:18px;opacity:.55}
+  .spark i{width:3px;border-radius:2px;background:var(--sev);display:block}
+  .sev-count{margin-top:13px;font:650 31px/1 Inter,system-ui,sans-serif;letter-spacing:-.04em;color:var(--text)}
+  .sev-foot{margin-top:7px;font-size:10.5px;color:var(--faint)}
+  .workspace{display:grid;grid-template-columns:minmax(0,1.38fr) minmax(390px,.78fr);gap:14px;flex:1;min-height:0}
+  .findings-panel{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .panel-head{display:flex;align-items:center;gap:10px;padding:14px 16px 12px;border-bottom:1px solid var(--line-soft);flex:0 0 auto}
+  .panel-title{font-size:13px;font-weight:600;letter-spacing:-.01em}
+  .panel-sub{font:500 10px/1 var(--mono);color:var(--faint);padding:3px 6px;border:1px solid var(--line-soft);border-radius:5px;background:rgba(255,255,255,.025)}
+  .panel-head .right{margin-left:auto;display:flex;align-items:center;gap:6px}
+  .icon-btn{width:29px;height:29px;border-radius:7px;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);display:grid;place-items:center}
+  .icon-btn:hover{color:var(--text);border-color:var(--line-strong);background:var(--surface-hover)}
+  .filters{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:1px solid var(--line-soft);flex:0 0 auto}
+  .search{display:flex;align-items:center;gap:7px;height:30px;padding:0 9px;border:1px solid var(--line);border-radius:7px;background:var(--bg-deep);color:var(--faint);min-width:185px}
+  .search input{border:0;background:transparent;outline:0;color:var(--text);width:100%;font-size:11.5px}
+  .search input::placeholder{color:var(--faint)}
+  .select{border:1px solid var(--line);background:var(--surface-2);color:var(--text-soft);border-radius:7px;height:30px;padding:0 9px;font-size:11px;outline:0}
+  .table-wrap{flex:1;min-height:0;overflow:auto}
+  table.findings{width:100%;border-collapse:collapse;table-layout:fixed}
+  .findings thead th{
+    position:sticky;top:0;z-index:1;background:#11171c;text-align:left;font:600 9.5px/1 var(--mono);
+    letter-spacing:.09em;text-transform:uppercase;color:var(--faint);padding:10px 10px;border-bottom:1px solid var(--line-soft);
+  }
+  .findings tbody td{padding:12px 10px;border-bottom:1px solid rgba(36,46,55,.62);vertical-align:middle}
+  .findings tbody tr{transition:background .14s}
+  .findings tbody tr:hover{background:rgba(255,255,255,.025)}
+  .findings tbody tr.selected{background:linear-gradient(90deg,rgba(244,120,50,.06),rgba(244,120,50,.015) 45%,transparent 75%)}
+  .sev-pill{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border-radius:999px;font:600 9.5px/1 Inter,sans-serif;letter-spacing:.02em;border:1px solid transparent;white-space:nowrap}
+  .sev-pill:before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor}
+  .sev-pill.critical{color:#ff8585;background:rgba(255,93,93,.10);border-color:rgba(255,93,93,.2)}
+  .sev-pill.high{color:#ffb16a;background:rgba(255,159,67,.10);border-color:rgba(255,159,67,.2)}
+  .sev-pill.medium{color:#f5d47c;background:rgba(244,201,93,.09);border-color:rgba(244,201,93,.18)}
+  .sev-pill.low{color:#72e9a0;background:rgba(74,222,128,.09);border-color:rgba(74,222,128,.18)}
+  .sev-pill.info{color:#a5b3c0;background:rgba(145,160,173,.09);border-color:rgba(145,160,173,.16)}
+  .f-title{font-size:12.5px;font-weight:550;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .f-meta{margin-top:4px;font:500 9.5px/1.2 var(--mono);color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .endpoint{font:500 10.5px/1.25 var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .method{font:600 9.5px/1 var(--mono);color:#b6c4d1;background:rgba(255,255,255,.045);border:1px solid var(--line-soft);border-radius:5px;padding:4px 5px;display:inline-block}
+  .tiny{font-size:10.5px;color:var(--muted);white-space:nowrap}
+  .status{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--text-soft);white-space:nowrap}
+  .status:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent)}
+  .status.resolved:before{background:var(--low)} .status.fp:before{background:var(--faint)}
+  .detail{display:flex;flex-direction:column;min-height:0;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.022),rgba(255,255,255,0) 25%),var(--surface)}
+  .detail-head{padding:15px 17px 12px;border-bottom:1px solid var(--line-soft);flex:0 0 auto}
+  .detail-pills{display:flex;align-items:center;gap:6px}
+  .pill{display:inline-flex;align-items:center;height:21px;padding:0 8px;border-radius:999px;font:600 9.5px/1 Inter,sans-serif;letter-spacing:.025em;border:1px solid var(--line);background:rgba(255,255,255,.025);color:var(--muted)}
+  .pill.critical{color:#ff8b8b;border-color:rgba(255,93,93,.24);background:rgba(255,93,93,.08)}
+  .pill.accent{color:#ffb07a;border-color:rgba(244,120,50,.24);background:rgba(244,120,50,.08)}
+  .pill.green{color:#7ee6a5;border-color:rgba(74,222,128,.22);background:rgba(74,222,128,.07)}
+  .detail h2{margin:12px 0 6px;font-size:20px;font-weight:620;line-height:1.18;letter-spacing:-.03em;color:var(--text)}
+  .detail-endpoint{font:500 10.5px/1.4 var(--mono);color:var(--muted);word-break:break-all}
+  .detail-body{flex:1;min-height:0;overflow:auto;padding:2px 17px 14px}
+  .detail-meta{display:grid;grid-template-columns:92px 1fr;gap:6px 12px;padding:12px 0 2px;font-size:11px}
+  .detail-meta dt{color:var(--faint);font:500 9.5px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.06em}
+  .detail-meta dd{margin:0;color:var(--text-soft)}
+  .dtabs{display:flex;gap:16px;border-bottom:1px solid var(--line-soft);margin-top:10px}
+  .dtabs button{border:0;background:transparent;color:var(--faint);padding:8px 0 9px;font-size:11px;font-weight:550;position:relative}
+  .dtabs button.active{color:var(--text)}
+  .dtabs button.active:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--accent)}
+  .dsec{margin-top:14px}
+  .dlabel{font:600 9px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+  .dtext{font-size:11.5px;line-height:1.65;color:var(--text-soft)}
+  .evidence{margin-top:7px;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:#090d10;font:400 10.5px/1.6 var(--mono);color:#c8d4df;white-space:pre-wrap;word-break:break-word}
+  .detail-actions{display:flex;align-items:center;gap:6px;padding:11px 14px;border-top:1px solid var(--line-soft);flex:0 0 auto;background:rgba(10,14,17,.18)}
+  .detail-actions .spacer{flex:1}
+  .mini-label{font:600 9px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  .field-label{display:flex;align-items:center;gap:6px;font:500 10.5px/1.2 Inter,sans-serif;color:var(--muted);margin-bottom:6px}
+  .input,.textarea,.select.full{width:100%;border:1px solid var(--line);background:var(--bg-deep);color:var(--text);border-radius:8px;outline:0;padding:9px 10px;font-size:11.5px;transition:border-color .15s,box-shadow .15s}
+  .select.full{height:36px;padding:0 10px;line-height:normal}
+  .input:focus,.textarea:focus,.select.full:focus{border-color:rgba(244,120,50,.45);box-shadow:0 0 0 3px rgba(244,120,50,.08)}
+  .textarea{resize:none;font:400 11px/1.55 var(--mono)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .form-grid .full{grid-column:1/-1}
+  .scope-panel{display:flex;flex-direction:column;flex:0 0 286px;min-height:0;overflow:hidden}
+  .scope-toolbar{display:flex;align-items:center;gap:7px;padding:11px 14px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
+  .scope-toolbar .right{margin-left:auto;color:var(--faint);font-size:10.5px}
+  .check{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:10.5px;white-space:nowrap}
+  .check input{appearance:none;width:13px;height:13px;border:1px solid var(--line-strong);border-radius:4px;background:var(--bg-deep);display:inline-grid;place-items:center;margin:0}
+  .check input:checked{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 3px rgba(244,120,50,.08)}
+  .check input:checked:after{content:"";width:5px;height:3px;border-left:1.5px solid var(--accent-ink);border-bottom:1.5px solid var(--accent-ink);transform:rotate(-45deg) translate(0,-1px)}
+  table.scope{width:100%;border-collapse:collapse;table-layout:fixed}
+  .scope thead th{background:#11171c;text-align:left;font:600 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:9px 10px;border-bottom:1px solid var(--line-soft)}
+  .scope tbody td{padding:9px 10px;border-bottom:1px solid rgba(36,46,55,.56);font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .scope tbody tr:hover{background:rgba(255,255,255,.022)}
+  .scope .path{font-family:var(--mono);color:var(--text-soft)}
+  .scope .host{color:var(--muted)}
+  .status-code{font:600 9.5px/1 var(--mono);color:#7ee6a5}
+  .bottom-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:14px;flex:1;min-height:0}
+  .setup-col{display:flex;flex-direction:column;gap:12px;min-height:0}
+  .setup-card{padding:14px 16px;flex:0 0 auto}
+  .setup-card.grow{flex:1;min-height:0;display:flex;flex-direction:column}
+  .setup-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+  .setup-title{font-size:13px;font-weight:600;letter-spacing:-.01em}
+  .setup-sub{margin-top:3px;font-size:10.5px;color:var(--faint)}
+  .step{width:20px;height:20px;border-radius:6px;background:rgba(244,120,50,.1);border:1px solid rgba(244,120,50,.2);color:var(--accent);display:grid;place-items:center;font:600 9px/1 var(--mono);flex:0 0 auto}
+  .skill-preview{margin-top:9px;padding:10px 11px;border:1px solid var(--line-soft);border-radius:8px;background:rgba(9,13,16,.45)}
+  .skill-preview p{margin:0;color:var(--muted);font-size:10.5px;line-height:1.55}
+  .skill-preview .tagrow{display:flex;align-items:center;gap:7px;margin-top:8px}
+  .tag{font:500 9px/1 var(--mono);color:var(--faint);border:1px solid var(--line-soft);border-radius:4px;padding:3px 5px;background:rgba(255,255,255,.018)}
+  .identity-area{flex:1;min-height:0;display:flex;flex-direction:column}
+  .identity-area .textarea{flex:1;min-height:130px;resize:none}
+  .identity-status{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:10px;color:var(--muted)}
+  .identity-status .dot{width:5px;height:5px;border-radius:50%;background:var(--low);box-shadow:0 0 8px rgba(74,222,128,.45)}
+  .run-panel{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .run-top{padding:14px 16px 12px;border-bottom:1px solid var(--line-soft)}
+  .run-provider{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--muted)}
+  .run-provider strong{color:var(--text-soft);font-weight:550}
+  .run-stats{display:flex;gap:14px;margin-top:10px;color:var(--faint);font:500 9.5px/1 var(--mono)}
+  .run-stats b{color:var(--text-soft);font-weight:500}
+  .run-actions{display:flex;align-items:center;gap:7px;margin-top:12px}
+  .run-progress{height:4px;border-radius:3px;background:#0a0e11;overflow:hidden;margin-top:12px}
+  .run-progress span{display:block;height:100%;width:68%;background:linear-gradient(90deg,var(--accent),#ffb070);border-radius:3px;box-shadow:0 0 10px rgba(244,120,50,.4)}
+  .run-status{display:flex;justify-content:space-between;margin-top:7px;font-size:10px;color:var(--faint)}
+  .log-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line-soft);flex:0 0 auto}
+  .log-head .right{margin-left:auto}
+  .console{flex:1;min-height:0;overflow:auto;padding:10px 13px;background:#090d10;font:400 10.5px/1.7 var(--mono);color:#a9b7c6}
+  .console .time{color:#4f5c67;margin-right:9px}
+  .console .ok{color:#72e9a0}.console .warn{color:#ffbd6f}.console .err{color:#ff8b8b}.console .accent{color:#ffad78}
+  .log-line{white-space:pre-wrap;word-break:break-word}
+  .skills-grid{display:grid;grid-template-columns:310px minmax(0,1fr);gap:14px;flex:1;min-height:0}
+  .skill-list-panel{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .skill-search{padding:11px 12px;border-bottom:1px solid var(--line-soft)}
+  .skill-list{flex:1;min-height:0;overflow:auto;padding:6px}
+  .skill-item{position:relative;display:flex;flex-direction:column;gap:3px;padding:10px 10px 10px 18px;border-radius:8px;border:1px solid transparent;cursor:pointer;margin-bottom:2px}
+  .skill-item:hover{background:rgba(255,255,255,.025)}
+  .skill-item.active{background:linear-gradient(90deg,rgba(244,120,50,.085),rgba(255,255,255,.015));border-color:rgba(244,120,50,.22)}
+  .skill-item.active:before{content:"";position:absolute;left:7px;top:16px;width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px rgba(244,120,50,.65);display:block}
+  .skill-name{font-size:11.5px;font-weight:550;color:var(--text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .skill-cat{font:500 9px/1.2 var(--mono);color:var(--faint);letter-spacing:.02em}
+  .skill-item .enabled{position:absolute;right:10px;top:11px;width:4px;height:4px;border-radius:50%;background:var(--low);box-shadow:0 0 7px rgba(74,222,128,.35)}
+  .skill-item.disabled .enabled{background:var(--faint);box-shadow:none}
+  .skill-editor{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .editor-head{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line-soft)}
+  .badge{font:600 8.5px/1 var(--mono);letter-spacing:.1em;color:var(--accent);border:1px solid rgba(244,120,50,.2);background:rgba(244,120,50,.07);border-radius:4px;padding:4px 6px}
+  .editor-head .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .switch{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:10.5px}
+  .switch i{width:26px;height:15px;border-radius:999px;background:rgba(244,120,50,.24);border:1px solid rgba(244,120,50,.28);position:relative;display:block}
+  .switch i:after{content:"";position:absolute;right:2px;top:2px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+  .editor-body{flex:1;min-height:0;overflow:auto;padding:14px 16px}
+  .editor-footer{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line-soft);flex:0 0 auto}
+  .editor-footer .hint{font-size:9.5px;color:var(--faint)}
+  .editor-footer .right{margin-left:auto;display:flex;gap:6px}
+  .editor-textarea{min-height:330px;flex:1;resize:vertical}
+  .settings-grid{display:grid;grid-template-columns:minmax(0,1.38fr) minmax(340px,.78fr);gap:14px;flex:1;min-height:0}
+  .settings-col{display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto}
+  .settings-card{padding:14px 16px;flex:0 0 auto}
+  .card-title{font-size:13px;font-weight:600;letter-spacing:-.01em;margin-bottom:12px}
+  .card-sub{color:var(--faint);font-size:10px;margin:-8px 0 12px}
+  .provider-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .link{color:#ffad78;text-decoration:none;font-size:10px}
+  .num-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .num{display:flex;align-items:center;gap:6px;font-size:9.5px;color:var(--faint)}
+  .num .input{width:72px;height:28px;padding:0 7px;font:500 10px/1 var(--mono)}
+  .help{font-size:9.5px;color:var(--faint);line-height:1.5}
+  .data-row{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);margin-top:9px}
+  .path-code{font:500 9.5px/1.4 var(--mono);color:var(--text-soft);background:#090d10;border:1px solid var(--line-soft);padding:5px 7px;border-radius:5px}
+  .divider{height:1px;background:var(--line-soft);margin:12px 0}
+  .toggle-row{display:flex;align-items:flex-start;gap:8px;margin:9px 0;font-size:10.5px;color:var(--text-soft)}
+  .toggle-row .check{margin-top:1px}
+  .toggle-row span small{display:block;color:var(--faint);font-size:9.5px;margin-top:2px}
+  .footer-bar{display:flex;align-items:center;gap:8px;padding:11px 22px;border-top:1px solid var(--line-soft);background:rgba(10,14,17,.55);flex:0 0 auto}
+  .footer-bar .status{margin-left:auto;color:var(--faint);font-size:10px}
+  .footer-bar .spacer{flex:1}
+  @media (max-width:1180px){
+    .workspace{grid-template-columns:1fr}
+    .detail{display:none}
+    .severity-grid{grid-template-columns:repeat(3,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- top bar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Sectiv">
+          <rect width="512" height="512" rx="112" fill="#0b1115"/>
+          <path fill="#eef1ef" transform="translate(156 87) scale(1.75)" d="M114 52H33C15 52 0 66 0 83C0 96 7 104 23 110L85 133C89 135 91 137 91 140C91 144 88 145 84 145H0V168H82C101 168 114 154 114 138C114 124 106 116 90 110L29 87C25 85 23 83 23 81C23 77 26 76 31 76H114Z"/>
+          <circle cx="346" cy="129" r="27" fill="#f47832"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">Sectiv</div>
+        <div class="brand-sub">AI security review</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button data-tab="dashboard" class="active">Dashboard <span class="count">5</span></button>
+      <button data-tab="scan">Scan</button>
+      <button data-tab="skills">Skills</button>
+      <button data-tab="settings">Settings</button>
+    </nav>
+
+    <div class="spacer"></div>
+    <div class="provider-chip"><span class="dot"></span><span>DeepSeek</span><span class="muted">deepseek-chat</span><span class="chev"></span></div>
+    <button class="btn primary">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      New scan
+    </button>
+  </header>
+
+  <main class="content">
+
+    <!-- DASHBOARD -->
+    <section class="page active" data-page="dashboard">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">Workspace / Acme production</div>
+          <h1>Security findings</h1>
+          <div class="sub">5 findings from 42 captured requests &nbsp;·&nbsp; last review 2m ago</div>
+        </div>
+        <div class="head-actions">
+          <button class="btn ghost">Export report</button>
+          <button class="btn primary">Run review</button>
+        </div>
+      </div>
+
+      <div class="severity-grid">
+        <button class="sev-card" style="--sev:#ff5d5d">
+          <div class="sev-head"><span class="sev-dot"></span><span class="sev-name">Critical</span><span class="spark"><i style="height:7px"></i><i style="height:12px"></i><i style="height:9px"></i><i style="height:16px"></i><i style="height:11px"></i></span></div>
+          <div class="sev-count">1</div>
+          <div class="sev-foot">needs immediate review</div>
+        </button>
+        <button class="sev-card" style="--sev:#ff9f43">
+          <div class="sev-head"><span class="sev-dot"></span><span class="sev-name">High</span><span class="spark"><i style="height:10px"></i><i style="height:7px"></i><i style="height:14px"></i><i style="height:9px"></i><i style="height:12px"></i></span></div>
+          <div class="sev-count">1</div>
+          <div class="sev-foot">privilege or tenant impact</div>
+        </button>
+        <button class="sev-card" style="--sev:#f4c95d">
+          <div class="sev-head"><span class="sev-dot"></span><span class="sev-name">Medium</span><span class="spark"><i style="height:8px"></i><i style="height:14px"></i><i style="height:10px"></i><i style="height:7px"></i><i style="height:12px"></i></span></div>
+          <div class="sev-count">1</div>
+          <div class="sev-foot">needs a precondition</div>
+        </button>
+        <button class="sev-card" style="--sev:#4ade80">
+          <div class="sev-head"><span class="sev-dot"></span><span class="sev-name">Low</span><span class="spark"><i style="height:6px"></i><i style="height:10px"></i><i style="height:8px"></i><i style="height:12px"></i><i style="height:9px"></i></span></div>
+          <div class="sev-count">1</div>
+          <div class="sev-foot">defence in depth</div>
+        </button>
+        <button class="sev-card" style="--sev:#91a0ad">
+          <div class="sev-head"><span class="sev-dot"></span><span class="sev-name">Info</span><span class="spark"><i style="height:9px"></i><i style="height:6px"></i><i style="height:12px"></i><i style="height:8px"></i><i style="height:10px"></i></span></div>
+          <div class="sev-count">1</div>
+          <div class="sev-foot">observation only</div>
+        </button>
+      </div>
+
+      <div class="workspace">
+        <section class="panel findings-panel">
+          <div class="panel-head">
+            <span class="panel-title">Findings</span>
+            <span class="panel-sub">5 results</span>
+            <div class="right">
+              <button class="icon-btn" title="Export"><svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M8 2v7m0 0 3-3m-3 3L5 6M3 11v2h10v-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
+          </div>
+          <div class="filters">
+            <label class="search">
+              <svg class="icon" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.2" stroke="currentColor" stroke-width="1.3"/><path d="m10.2 10.2 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <input placeholder="Search findings…">
+            </label>
+            <select class="select"><option>All severities</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option><option>Info</option></select>
+            <select class="select"><option>All statuses</option><option>Open</option><option>Resolved</option><option>False positive</option></select>
+            <button class="btn ghost small" style="margin-left:auto">Clear filters</button>
+          </div>
+          <div class="table-wrap">
+            <table class="findings">
+              <colgroup><col style="width:91px"><col><col style="width:175px"><col style="width:64px"><col style="width:78px"><col style="width:68px"><col style="width:98px"></colgroup>
+              <thead><tr><th>Severity</th><th>Finding</th><th>Endpoint</th><th>Method</th><th>Confidence</th><th>Status</th><th>Found</th></tr></thead>
+              <tbody>
+                <tr class="selected">
+                  <td><span class="sev-pill critical">Critical</span></td>
+                  <td><div class="f-title">Cross-tenant access to billing invoices</div><div class="f-meta">BOLA · identity swap confirmed</div></td>
+                  <td><div class="endpoint">app.acme.test/api/v2/invoices/8841</div></td>
+                  <td><span class="method">GET</span></td>
+                  <td><span class="tiny">Certain</span></td>
+                  <td><span class="status">Open</span></td>
+                  <td><span class="tiny">Nov 3, 16:44</span></td>
+                </tr>
+                <tr>
+                  <td><span class="sev-pill high">High</span></td>
+                  <td><div class="f-title">Admin export endpoint reachable with a standard token</div><div class="f-meta">Function-level authorization</div></td>
+                  <td><div class="endpoint">app.acme.test/api/admin/export</div></td>
+                  <td><span class="method">POST</span></td>
+                  <td><span class="tiny">Firm</span></td>
+                  <td><span class="status">Open</span></td>
+                  <td><span class="tiny">Nov 3, 16:44</span></td>
+                </tr>
+                <tr>
+                  <td><span class="sev-pill medium">Medium</span></td>
+                  <td><div class="f-title">Order total accepted from the client</div><div class="f-meta">Business logic</div></td>
+                  <td><div class="endpoint">app.acme.test/api/cart/checkout</div></td>
+                  <td><span class="method">POST</span></td>
+                  <td><span class="tiny">Firm</span></td>
+                  <td><span class="status">Open</span></td>
+                  <td><span class="tiny">Nov 3, 16:44</span></td>
+                </tr>
+                <tr>
+                  <td><span class="sev-pill low">Low</span></td>
+                  <td><div class="f-title">Reflected search term in HTML response</div><div class="f-meta">Cross-site scripting</div></td>
+                  <td><div class="endpoint">app.acme.test/search?q=hello</div></td>
+                  <td><span class="method">GET</span></td>
+                  <td><span class="tiny">Tentative</span></td>
+                  <td><span class="status">Open</span></td>
+                  <td><span class="tiny">Nov 3, 16:44</span></td>
+                </tr>
+                <tr>
+                  <td><span class="sev-pill info">Info</span></td>
+                  <td><div class="f-title">Server version disclosed in response header</div><div class="f-meta">Sensitive data exposure</div></td>
+                  <td><div class="endpoint">app.acme.test/</div></td>
+                  <td><span class="method">GET</span></td>
+                  <td><span class="tiny">Certain</span></td>
+                  <td><span class="status">Open</span></td>
+                  <td><span class="tiny">Nov 3, 16:44</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="panel detail">
+          <div class="detail-head">
+            <div class="detail-pills"><span class="pill critical">Critical</span><span class="pill accent">Certain</span><span class="pill green">Open</span></div>
+            <h2>Cross-tenant access to billing invoices</h2>
+            <div class="detail-endpoint">GET&nbsp; https://app.acme.test/api/v2/invoices/8841</div>
+          </div>
+          <div class="detail-body">
+            <dl class="detail-meta">
+              <dt>Skill</dt><dd>IDOR &amp; BOLA</dd>
+              <dt>Weakness</dt><dd>CWE-639</dd>
+              <dt>CVSS</dt><dd>9.1</dd>
+              <dt>Source</dt><dd>Active identity-swap check</dd>
+            </dl>
+            <div class="dtabs"><button class="active">Overview</button><button>Request</button><button>Response</button></div>
+            <div class="dsec"><div class="dlabel">Description</div><div class="dtext">Replaying the captured request with User B’s session returned User A’s invoice with a 200 response. The server appears to trust the client-supplied invoice identifier and does not scope the query to the authenticated tenant.</div></div>
+            <div class="dsec"><div class="dlabel">Evidence</div><div class="evidence">User B received HTTP 200 with a 96% response similarity.
+Response contained alice@example.com and invoice 8841.</div></div>
+            <div class="dsec"><div class="dlabel">Remediation</div><div class="dtext">Derive the tenant and owner from the authenticated session, then apply an ownership predicate to every invoice lookup. Return 404 for objects the caller does not own.</div></div>
+          </div>
+          <div class="detail-actions">
+            <button class="btn ghost small">Copy</button>
+            <button class="btn ghost small">False positive</button>
+            <button class="btn ghost small">Resolve</button>
+            <div class="spacer"></div>
+            <button class="btn primary small">Send to Repeater</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- SCAN -->
+    <section class="page" data-page="scan">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">New review</div>
+          <h1>Run a review</h1>
+          <div class="sub">Select captured traffic, a goal, and optional identities for BAC/IDOR checks.</div>
+        </div>
+        <div class="head-actions"><button class="btn ghost">Load site map</button></div>
+      </div>
+
+      <section class="panel scope-panel">
+        <div class="panel-head">
+          <span class="panel-title">1 &nbsp; Target scope</span>
+          <select class="select" style="width:142px;height:28px;margin-left:6px"><option>Proxy history</option><option>Site map</option></select>
+          <button class="btn ghost small">Refresh</button>
+          <div class="right"><span class="panel-sub">3 selected</span><span class="tiny" style="margin-left:8px">of 42 captured</span></div>
+        </div>
+        <div class="scope-toolbar">
+          <label class="search" style="min-width:220px"><svg class="icon" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.2" stroke="currentColor" stroke-width="1.3"/><path d="m10.2 10.2 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><input placeholder="Filter host, path, method…"></label>
+          <label class="check"><input type="checkbox"> Burp scope only</label>
+          <label class="check"><input type="checkbox" checked> Collapse duplicates</label>
+          <div class="right">
+            <button class="btn ghost small">Select all</button>
+            <button class="btn ghost small">None</button>
+            <button class="btn ghost small">In scope</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="scope">
+            <colgroup><col style="width:34px"><col style="width:64px"><col style="width:180px"><col><col style="width:58px"><col style="width:78px"><col style="width:84px"></colgroup>
+            <thead><tr><th></th><th>Method</th><th>Host</th><th>Path</th><th>Status</th><th>Size</th><th>Type</th></tr></thead>
+            <tbody>
+              <tr><td><input type="checkbox" checked></td><td><span class="method">GET</span></td><td class="host">app.acme.test</td><td class="path">/api/v2/account</td><td><span class="status-code">200</span></td><td>1.2 KB</td><td>JSON</td></tr>
+              <tr><td><input type="checkbox" checked></td><td><span class="method">GET</span></td><td class="host">app.acme.test</td><td class="path">/api/v2/invoices?page=1</td><td><span class="status-code">200</span></td><td>8.4 KB</td><td>JSON</td></tr>
+              <tr><td><input type="checkbox" checked></td><td><span class="method">GET</span></td><td class="host">app.acme.test</td><td class="path">/api/v2/invoices/8841</td><td><span class="status-code">200</span></td><td>2.1 KB</td><td>JSON</td></tr>
+              <tr><td><input type="checkbox"></td><td><span class="method">POST</span></td><td class="host">app.acme.test</td><td class="path">/api/cart/checkout</td><td><span class="status-code">201</span></td><td>640 B</td><td>JSON</td></tr>
+              <tr><td><input type="checkbox"></td><td><span class="method">POST</span></td><td class="host">app.acme.test</td><td class="path">/api/admin/export</td><td><span class="status-code">202</span></td><td>312 B</td><td>JSON</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="bottom-grid">
+        <div class="setup-col">
+          <section class="panel setup-card">
+            <div class="setup-head"><span class="step">2</span><div><div class="setup-title">Review goal</div><div class="setup-sub">One skill shapes the AI prompt.</div></div></div>
+            <select class="select full"><option>IDOR &amp; BOLA — Access control</option><option>Cross-Site Scripting — Injection</option><option>SSRF &amp; Outbound Requests — Injection</option><option>Authentication &amp; Sessions — Authentication</option></select>
+            <div class="skill-preview">
+              <p>Object-level authorization: can one user reach another user’s records by changing IDs, paths or body fields?</p>
+              <div class="tagrow"><span class="tag">Access control</span><span class="tag">1,214 chars</span><span class="tag">built-in</span></div>
+            </div>
+          </section>
+
+          <section class="panel setup-card grow">
+            <div class="setup-head"><span class="step">3</span><div><div class="setup-title">Identity context</div><div class="setup-sub">Paste two accounts. Cookies are masked before prompting.</div></div></div>
+            <div class="identity-area">
+              <textarea class="textarea" spellcheck="false">User A
+  email: alice@example.com
+  Cookie: session=****
+  Authorization: Bearer ****
+
+User B
+  email: bob@example.com
+  Cookie: session=****
+  Authorization: Bearer ****</textarea>
+              <div class="identity-status"><span class="dot"></span> Identity swap ready &nbsp;·&nbsp; A: email + cookie &nbsp;·&nbsp; B: email + cookie</div>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel run-panel">
+          <div class="run-top">
+            <div class="run-provider"><span class="dot" style="width:5px;height:5px;border-radius:50%;background:var(--accent)"></span> Provider <strong>DeepSeek · deepseek-chat</strong><button class="btn ghost small" style="margin-left:auto">API settings</button></div>
+            <div class="run-stats"><span><b>3</b> requests</span><span><b>21.7 KB</b> prompt</span><span><b>~1</b> AI call</span><span><b>2</b> swap checks</span></div>
+            <div class="run-actions"><button class="btn primary">Run review</button><button class="btn ghost" disabled>Stop</button><span class="tiny" style="margin-left:auto;color:var(--faint)">Ready</span></div>
+            <div class="run-progress"><span></span></div>
+            <div class="run-status"><span>Reviewing IDOR &amp; BOLA · chunk 1/1</span><span>68%</span></div>
+          </div>
+          <div class="log-head"><span class="mini-label">Run log</span><button class="btn ghost small right">Clear</button></div>
+          <div class="console">
+            <div class="log-line"><span class="time">16:44:30</span><span class="accent">Provider:</span> DeepSeek · deepseek-chat</div>
+            <div class="log-line"><span class="time">16:44:30</span>Identities: A: email, cookie &nbsp;·&nbsp; B: email, cookie</div>
+            <div class="log-line"><span class="time">16:44:30</span>Packed 3 exchanges into 1 AI call.</div>
+            <div class="log-line"><span class="time">16:44:31</span><span class="ok">1 finding(s) from IDOR &amp; BOLA · 4,812 tokens</span></div>
+            <div class="log-line"><span class="time">16:44:32</span><span class="warn">Running identity-swap checks on 2 request(s).</span></div>
+            <div class="log-line"><span class="time">16:44:34</span><span class="ok">Potential cross-identity access at /api/v2/invoices/8841 · HTTP 200, 96% similar</span></div>
+            <div class="log-line"><span class="time">16:44:35</span>Identity swap held at /api/v2/account: HTTP 403.</div>
+            <div class="log-line"><span class="time">16:44:35</span><span class="accent">Finished:</span> 2 findings added · 0 duplicates · 1 AI call · 2 swap requests.</div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- SKILLS -->
+    <section class="page" data-page="skills">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">Prompt library</div>
+          <h1>Skills</h1>
+          <div class="sub">Reusable review goals that shape the AI prompt. Edit, duplicate or import your own.</div>
+        </div>
+        <div class="head-actions"><button class="btn ghost">Import .md</button><button class="btn primary">New skill</button></div>
+      </div>
+
+      <div class="skills-grid">
+        <section class="panel skill-list-panel">
+          <div class="panel-head"><span class="panel-title">Library</span><span class="panel-sub">10 skills</span></div>
+          <div class="skill-search"><label class="search" style="width:100%"><svg class="icon" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.2" stroke="currentColor" stroke-width="1.3"/><path d="m10.2 10.2 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg><input placeholder="Search skills…"></label></div>
+          <div class="skill-list">
+            <div class="skill-item active"><span class="enabled"></span><div class="skill-name">IDOR &amp; BOLA</div><div class="skill-cat">Access control</div></div>
+            <div class="skill-item"><span class="enabled"></span><div class="skill-name">Function-Level Authorization</div><div class="skill-cat">Access control</div></div>
+            <div class="skill-item"><span class="enabled"></span><div class="skill-name">Authentication &amp; Sessions</div><div class="skill-cat">Authentication</div></div>
+            <div class="skill-item"><span class="enabled"></span><div class="skill-name">SQL Injection</div><div class="skill-cat">Injection</div></div>
+            <div class="skill-item"><span class="enabled"></span><div class="skill-name">Cross-Site Scripting</div><div class="skill-cat">Injection</div></div>
+            <div class="skill-item"><span class="enabled"></span><div class="skill-name">SSRF &amp; Outbound Requests</div><div class="skill-cat">Injection</div></div>
+            <div class="skill-item"><span class="enabled"></span><div class="skill-name">Sensitive Data Exposure</div><div class="skill-cat">Data protection</div></div>
+            <div class="skill-item"><span class="enabled"></span><div class="skill-name">Business Logic</div><div class="skill-cat">Business logic</div></div>
+            <div class="skill-item"><span class="enabled"></span><div class="skill-name">Mass Assignment</div><div class="skill-cat">Input validation</div></div>
+            <div class="skill-item"><span class="enabled"></span><div class="skill-name">File Upload &amp; Path Traversal</div><div class="skill-cat">Files</div></div>
+          </div>
+        </section>
+
+        <section class="panel skill-editor">
+          <div class="editor-head">
+            <span class="panel-title">Skill editor</span><span class="badge">BUILT-IN</span>
+            <div class="right"><span class="switch">Enabled <i></i></span></div>
+          </div>
+          <div class="editor-body">
+            <div class="form-grid">
+              <div><div class="field-label">Name</div><input class="input" value="IDOR &amp; BOLA"></div>
+              <div><div class="field-label">Category</div><input class="input" value="Access control"></div>
+              <div class="full"><div class="field-label">Description</div><input class="input" value="Object-level authorization: can one user reach another user's records by changing IDs, paths or body fields?"></div>
+              <div class="full"><div class="field-label">Review instructions <span class="tiny">the prompt used for this goal</span></div><textarea class="textarea editor-textarea" spellcheck="false">Review the captured traffic for Insecure Direct Object References and Broken Object Level Authorization.
+
+Focus on:
+- Numeric IDs, UUIDs, slugs, filenames, account/tenant/org IDs in paths, query strings, JSON bodies and headers.
+- Endpoints that return a single object or a list scoped to the caller (e.g. /api/users/{id}, /orders/{id}, /files/{id}).
+- Whether the server derives the object owner from the session, or trusts a client-supplied identifier.
+- Any evidence that User A's identifier appears in a response while authenticated as User B.
+
+Use the identity context to reason about which account sent the request and whose data came back. If the captured response contains a different user's email, name, account number or tenant ID, report it.
+
+Only report an issue when the captured evidence supports it.</textarea></div>
+            </div>
+          </div>
+          <div class="editor-footer"><span class="hint">Built-in prompts can be edited. Reset restores the originals.</span><div class="right"><button class="btn ghost small">Revert</button><button class="btn primary small">Save changes</button></div></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="page" data-page="settings">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">Configuration</div>
+          <h1>Settings</h1>
+          <div class="sub">Provider, prompt budget and active-check behaviour.</div>
+        </div>
+        <div class="head-actions"><button class="btn ghost">Revert</button><button class="btn primary">Save settings</button></div>
+      </div>
+
+      <div class="settings-grid">
+        <div class="settings-col">
+          <section class="panel settings-card">
+            <div class="card-title">AI provider</div>
+            <div class="provider-row">
+              <select class="select" style="width:240px"><option>DeepSeek</option><option>Claude (Anthropic)</option><option>OpenAI</option><option>GLM (Zhipu)</option><option>z.ai</option><option>OpenRouter</option><option>Ollama (local)</option><option>Custom</option></select>
+              <span class="help">OpenAI-compatible chat completions</span>
+              <a class="link" href="#" style="margin-left:auto">Get an API key ↗</a>
+            </div>
+            <div class="form-grid">
+              <div class="full"><div class="field-label">Base URL</div><input class="input" value="https://api.deepseek.com/v1/chat/completions"></div>
+              <div><div class="field-label">Model</div><input class="input" value="deepseek-chat"></div>
+              <div><div class="field-label">API key</div><input class="input" type="password" value=""></div>
+              <div class="full num-row"><span class="num">Max output tokens <input class="input" value="8192"></span><span class="num">Timeout (s) <input class="input" value="180"></span><span class="num">Token field <select class="select" style="height:28px"><option>max_tokens</option><option>max_completion_tokens</option></select></span><label class="check"><input type="checkbox" checked> Send temperature</label><input class="input" style="width:58px" value="0.1"></div>
+              <div class="full"><div class="field-label">Extra headers <span class="tiny">one Name: value per line</span></div><textarea class="textarea" style="min-height:58px" spellcheck="false"></textarea></div>
+              <div class="full"><div class="field-label">Extra body JSON <span class="tiny">optional object merged into the request</span></div><textarea class="textarea" style="min-height:58px" spellcheck="false"></textarea></div>
+            </div>
+            <div class="divider"></div>
+            <button class="btn ghost small">Test connection</button>
+          </section>
+        </div>
+
+        <div class="settings-col">
+          <section class="panel settings-card">
+            <div class="card-title">Scan behavior</div>
+            <div class="form-grid">
+              <div><div class="field-label">Prompt chunk size</div><input class="input" value="42000"></div>
+              <div><div class="field-label">Max findings / chunk</div><input class="input" value="8"></div>
+              <div><div class="field-label">Response chars / request</div><input class="input" value="7000"></div>
+              <div><div class="field-label">Auto-select scope</div><select class="select full"><option>Off</option><option>In-scope only</option></select></div>
+            </div>
+            <div class="toggle-row"><label class="check"><input type="checkbox" checked></label><span>Mask cookies and tokens before prompts<small>Identity markers keep BAC/IDOR reasoning intact.</small></span></div>
+          </section>
+
+          <section class="panel settings-card">
+            <div class="card-title">Active identity checks</div>
+            <div class="toggle-row"><label class="check"><input type="checkbox"></label><span>Allow state-changing methods<small>POST/PUT/PATCH/DELETE during identity-swap replay.</small></span></div>
+            <div class="form-grid">
+              <div><div class="field-label">Max requests</div><input class="input" value="20"></div>
+              <div><div class="field-label">Delay (ms)</div><input class="input" value="300"></div>
+            </div>
+          </section>
+
+          <section class="panel settings-card">
+            <div class="card-title">Data</div>
+            <div class="data-row"><span>State file</span><span class="path-code">~/.sectiv/state.json</span><button class="btn ghost small">Copy</button></div>
+            <div class="help" style="margin-top:8px">Settings, skills, identity context and findings are stored locally. The file is not encrypted.</div>
+            <div class="divider"></div>
+            <div style="display:flex;gap:7px"><button class="btn danger small">Clear findings</button><button class="btn danger small">Reset settings</button></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="footer-bar">
+    <span class="status">Settings loaded</span>
+    <div class="spacer"></div>
+    <span style="font:500 9.5px/1 var(--mono);color:var(--faint)">5 findings · 5 open</span>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const wanted = params.get('tab') || 'dashboard';
+  function activate(tab) {
+    document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.dataset.page === tab));
+  }
+  document.querySelectorAll('.nav button').forEach(b => b.addEventListener('click', () => {
+    activate(b.dataset.tab);
+    history.replaceState(null, '', '?tab=' + b.dataset.tab);
+  }));
+  activate(wanted);
+</script>
+</body>
+</html>
