@@ -1,49 +1,57 @@
-# Sectiv
+<p align="center">
+  <img src="src/main/resources/logo.png" width="88" alt="Sectiv logo">
+</p>
 
-**Skill-driven AI security review for Burp Suite.**
+<h1 align="center">Sectiv</h1>
 
-Sectiv turns captured Burp traffic into a triaged vulnerability dashboard. You choose a scope from Burp's proxy history or site map, pick a review goal ("skill"), add optional authorization context for two accounts, and let a model of your choice review the traffic. Findings land in a dashboard grouped by severity, with evidence, remediation, raw request/response data and report export.
+<p align="center">
+  <b>Skill-driven AI security review for Burp Suite</b><br>
+  <sub>Capture traffic → pick a review goal → get a triaged vulnerability dashboard with AI findings, PoCs and reports.</sub>
+</p>
 
-The extension is built with Kotlin, the Montoya API and Swing. It has no Python runtime and no external service other than the AI provider you configure.
+<p align="center">
+  <a href="https://sectiv.ai"><img alt="Website" src="https://img.shields.io/badge/Website-sectiv.ai-0B1115?style=for-the-badge&logo=google-chrome&logoColor=white"></a>
+  <a href="https://www.youtube.com/@zack0x01"><img alt="YouTube" src="https://img.shields.io/badge/YouTube-zack0x01-FF0000?style=for-the-badge&logo=youtube&logoColor=white"></a>
+  <a href="https://x.com/zack0x01_"><img alt="X" src="https://img.shields.io/badge/X-zack0x01_-000000?style=for-the-badge&logo=x&logoColor=white"></a>
+  <a href="https://www.instagram.com/zacl0x01/"><img alt="Instagram" src="https://img.shields.io/badge/Instagram-zacl0x01-E4405F?style=for-the-badge&logo=instagram&logoColor=white"></a>
+  <a href="https://www.buymeacoffee.com/zack0x01"><img alt="Buy Me a Coffee" src="https://img.shields.io/badge/Buy_Me_a_Coffee-zack0x01-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black"></a>
+</p>
 
-![Sectiv dashboard](design/dashboard-demo.png)
+<p align="center">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-F47832?style=flat-square">
+  <img alt="Burp Suite" src="https://img.shields.io/badge/Burp_Suite-Montoya_2026.7-FF6633?style=flat-square">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey?style=flat-square">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square">
+</p>
+
+---
+
+<p align="center">
+  <img src="design/dashboard-demo.png" alt="Sectiv dashboard" width="920">
+</p>
+
+## Install (users)
+
+No JDK, no build — just load the JAR:
+
+1. Download **`release/sectiv-1.0.0.jar`** (or get it from the GitHub Releases page).
+2. Open Burp Suite → **Extensions → Installed**.
+3. Click **Add** → extension type **Java** → select the JAR.
+4. A **Sectiv** tab appears. Open **Settings**, paste your AI provider API key, and you're ready to scan.
+
+> The JAR is compiled against the Montoya API `2026.7` and Java 21. Use a current Burp release; older releases may reject it.
 
 ## Features
 
 - **Severity dashboard** — Critical, High, Medium, Low and Info counters, filterable tables, search, status triage (Open / Triaged / False positive / Resolved) and HTML / Markdown / JSON export.
-- **Scope picker** — load proxy history or site map, filter by host/path/method, restrict to Burp scope, collapse duplicate endpoints, and tick the requests to review.
+- **Scope picker** — load proxy history or site map, filter by host/path/method, restrict to Burp scope, collapse duplicate endpoints, remove static assets, and tick the requests to review.
 - **Skills** — built-in review goals for BOLA/IDOR, function-level authorization, authentication/session issues, SQLi, XSS, SSRF, sensitive data exposure, business logic, mass assignment and file handling. Create, edit, duplicate, import and export your own Markdown skills.
 - **Goal-based scanning** — run one skill or a full sweep of all enabled skills. Traffic is packed into token-budgeted chunks, with progress, cancellation and a live run log.
+- **Structured findings** — every finding includes description, steps to reproduce, impact, a ready-to-use PoC (HTML page, Python script or curl command), CWE/CVE references and CVSS.
 - **Identity context** — paste emails, cookies and authorization headers for User A and User B. The model uses this for BAC/IDOR reasoning, and Sectiv can optionally perform a deterministic **identity-swap check**: replay selected requests with User B's credentials and compare responses with User A's.
 - **Multiple providers** — DeepSeek, Claude (Anthropic), OpenAI, GLM (Zhipu), z.ai, OpenRouter, local Ollama and any custom OpenAI-compatible endpoint.
 - **Privacy controls** — cookie values, authorization headers, passwords, API keys and JWTs are masked before traffic is sent to the model. Email addresses are deliberately kept because they are a primary BOLA/IDOR signal. Masking can be disabled in Settings.
 - **Safe defaults** — active identity-swap checks are off by default, require explicit confirmation, only use GET/HEAD/OPTIONS unless enabled otherwise, and are rate-limited.
-
-## Build
-
-Requirements: JDK 21 and network access for the first Gradle run.
-
-```bash
-./gradlew test          # unit + headless UI tests
-./gradlew shadowJar     # build the loadable extension
-```
-
-The extension JAR is written to:
-
-```
-build/libs/sectiv-1.0.0.jar
-```
-
-The JAR bundles the Kotlin runtime and a relocated copy of Jackson. The Montoya API is compiled against but not bundled; Burp provides it at runtime.
-
-## Install
-
-1. Open Burp Suite → **Extensions → Installed**.
-2. Click **Add**, choose extension type **Java**.
-3. Select `build/libs/sectiv-1.0.0.jar`.
-4. A **Sectiv** suite tab appears.
-
-The code is compiled against Montoya API `2026.7` and Java 21. Use a current Burp release; older releases may reject the extension.
 
 ## Use
 
@@ -100,13 +108,22 @@ src/main/kotlin/io/sectiv/burp/
 src/test/kotlin/            unit, scan-pipeline and headless UI tests
 ```
 
-## Links
+## Build from source (developers)
 
-[![Website](https://img.shields.io/badge/sectiv.ai-0B1115?style=for-the-badge&logo=google-chrome&logoColor=white)](https://sectiv.ai)
-[![YouTube](https://img.shields.io/badge/YouTube-zack0x01-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/@zack0x01)
-[![X](https://img.shields.io/badge/X-zack0x01_-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/zack0x01_)
-[![Instagram](https://img.shields.io/badge/Instagram-zacl0x01-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/zacl0x01/)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-zack0x01-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://www.buymeacoffee.com/zack0x01)
+Only needed if you want to compile the extension yourself. Requirements: JDK 21 and network access for the first Gradle run.
+
+```bash
+./gradlew test          # unit + headless UI tests
+./gradlew shadowJar     # build the loadable extension
+```
+
+The extension JAR is written to:
+
+```
+build/libs/sectiv-1.0.0.jar
+```
+
+The JAR bundles the Kotlin runtime and a relocated copy of Jackson. The Montoya API is compiled against but not bundled; Burp provides it at runtime.
 
 ## Limitations
 

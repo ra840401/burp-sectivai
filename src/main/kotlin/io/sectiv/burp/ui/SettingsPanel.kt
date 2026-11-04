@@ -363,11 +363,23 @@ class SettingsPanel(
             add(clearFindingsButton)
             add(resetSettingsButton)
         }
+        val links = JPanel(FlowLayout(FlowLayout.LEFT, 10, 0)).apply {
+            isOpaque = false
+            alignmentX = LEFT_ALIGNMENT
+            add(JLabel("Links").apply { font = theme.small; foreground = theme.muted })
+            add(LinkLabel("Website", "https://sectiv.ai", theme))
+            add(LinkLabel("YouTube", "https://www.youtube.com/@zack0x01", theme))
+            add(LinkLabel("X", "https://x.com/zack0x01_", theme))
+            add(LinkLabel("Instagram", "https://www.instagram.com/zacl0x01/", theme))
+            add(LinkLabel("Buy Me a Coffee", "https://www.buymeacoffee.com/zack0x01", theme))
+        }
         body.add(pathRow)
         body.add(Box.createVerticalStrut(8))
         body.add(help("Settings, skills, identity context and findings are stored together. The file is not encrypted, so use a dedicated API key and rotate it if the host is shared."))
         body.add(Box.createVerticalStrut(10))
         body.add(actions)
+        body.add(Box.createVerticalStrut(10))
+        body.add(links)
         card.add(body, BorderLayout.CENTER)
         return card
     }
