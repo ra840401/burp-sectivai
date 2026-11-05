@@ -30,144 +30,50 @@
   <img src="design/dashboard-demo.png" alt="Sectiv dashboard" width="920">
 </p>
 
-## Install (users)
+## Install
 
-No JDK, no build — just load the JAR:
-
-1. Download **`release/sectiv-1.0.0.jar`** (or get it from the GitHub Releases page).
-2. Open Burp Suite → **Extensions → Installed**.
-3. Click **Add** → extension type **Java** → select the JAR.
-4. A **Sectiv** tab appears. Open **Settings**, paste your AI provider API key, and you're ready to scan.
-
-> The JAR is compiled against the Montoya API `2026.7` and Java 21. Use a current Burp release; older releases may reject it.
-
-## Troubleshooting
-
-**"Request to DeepSeek timed out" (or any provider) but curl works**
-
-- The extension now honours the standard `http_proxy` / `https_proxy` environment variables. If your traffic must go through a proxy, export them before starting Burp:
-  ```bash
-  export https_proxy=http://127.0.0.1:8080
-  ```
-- If you use a VPN, make sure the AI provider is reachable through it.
-- Try lowering **Prompt chunk size** and raising **Timeout (s)** in Settings.
-- Double-check the base URL — DeepSeek should be `https://api.deepseek.com/v1/chat/completions`.
-
-**"Failed · ..." on Test connection**
-
-Read the exact reason after `Failed ·`:
-
-- `401 / 403` → API key is wrong or missing.
-- `404` → base URL or model name is wrong.
-- `400` → model name or advanced request options are wrong.
-- `timed out` → network/proxy issue (see above).
-
-Make sure the provider kind matches the API: DeepSeek/OpenAI/GLM/etc. use OpenAI-compatible chat completions; Claude uses the Anthropic Messages API.
+1. Download **`release/sectiv-1.0.0.jar`**.
+2. Burp Suite → **Extensions → Installed → Add** → type **Java** → select the JAR.
+3. A **Sectiv** tab appears. Open **Settings**, paste your AI provider API key. Done.
 
 ## Features
 
-- **Severity dashboard** — Critical, High, Medium, Low and Info counters, filterable tables, search, status triage (Open / Triaged / False positive / Resolved) and HTML / Markdown / JSON export.
-- **Scope picker** — load proxy history or site map, filter by host/path/method, restrict to Burp scope, collapse duplicate endpoints, remove static assets, and tick the requests to review.
-- **Skills** — built-in review goals for BOLA/IDOR, function-level authorization, authentication/session issues, SQLi, XSS, SSRF, sensitive data exposure, business logic, mass assignment and file handling. Create, edit, duplicate, import and export your own Markdown skills.
-- **Goal-based scanning** — run one skill or a full sweep of all enabled skills. Traffic is packed into token-budgeted chunks, with progress, cancellation and a live run log.
-- **Structured findings** — every finding includes description, steps to reproduce, impact, a ready-to-use PoC (HTML page, Python script or curl command), CWE/CVE references and CVSS.
-- **Identity context** — paste emails, cookies and authorization headers for User A and User B. The model uses this for BAC/IDOR reasoning, and Sectiv can optionally perform a deterministic **identity-swap check**: replay selected requests with User B's credentials and compare responses with User A's.
-- **Multiple providers** — DeepSeek, Claude (Anthropic), OpenAI, GLM (Zhipu), z.ai, OpenRouter, local Ollama and any custom OpenAI-compatible endpoint.
-- **Privacy controls** — cookie values, authorization headers, passwords, API keys and JWTs are masked before traffic is sent to the model. Email addresses are deliberately kept because they are a primary BOLA/IDOR signal. Masking can be disabled in Settings.
-- **Safe defaults** — active identity-swap checks are off by default, require explicit confirmation, only use GET/HEAD/OPTIONS unless enabled otherwise, and are rate-limited.
+- **Severity dashboard** — Critical / High / Medium / Low / Info, search, filters, triage status and HTML / Markdown / JSON export.
+- **Scope picker** — load proxy history or site map, filter, collapse duplicates, remove static assets, tick the requests to review.
+- **Skills** — built-in demo skills (IDOR, XSS, SQLi, SSRF, auth…) plus create, edit, import and export your own.
+- **Structured findings** — description, steps to reproduce, impact, PoC (HTML / Python / curl), CWE/CVE and CVSS.
+- **Identity context** — two accounts for BAC/IDOR reasoning, plus an optional deterministic identity-swap check.
+- **Multiple providers** — DeepSeek, OpenAI, Claude, GLM, z.ai, OpenRouter, Ollama and any OpenAI-compatible endpoint.
+- **Privacy controls** — cookies, tokens, keys and JWTs are masked before traffic is sent to the model.
+
+## Use
+
+1. **Settings** — pick a provider, set base URL + model, paste the API key, **Test connection**, save.
+2. **Scan → Target scope** — load history or site map and tick the requests to review.
+3. **Scan → Review goal** — pick a skill (or run all enabled).
+4. **Scan → Identity context** — optionally paste two accounts for BAC/IDOR checks.
+5. **Run scan** — findings appear live in the dashboard; export when done.
 
 ## Skills
 
-The built-in skills are **demo examples** — they show the format and cover common bug classes, but you should still add your own skills tailored to your target application.
+The built-in skills are **demo examples** — add your own skills tailored to your target.
 
-**For best results**, end every skill body with a validation instruction, for example:
+**Tip:** end every skill body with a validation instruction, for example:
 
 > Before reporting a finding, confirm it against the captured evidence and explain what would validate it. If you cannot confirm it, mark it tentative or leave it out.
 
 That one line eliminates most false positives.
 
-## Use
-
-1. **Settings → AI provider** — choose a provider, set the base URL/model, paste an API key, and use **Test connection**. Save.
-2. **Scan → Target scope** — load proxy history or the site map, filter and tick the requests to review. **In scope** selects only items inside Burp's target scope.
-3. **Scan → Review goal** — choose one skill, or enable **Run all enabled skills**.
-4. **Scan → Identity context** — optionally paste two accounts. The template inserts a parseable layout:
-   ```
-   User A
-     email: alice@example.com
-     Cookie: session=...
-     Authorization: Bearer ...
-
-   User B
-     email: bob@example.com
-     Cookie: session=...
-     Authorization: Bearer ...
-   ```
-   One-line notes such as `User A cookie is: session=...` are also parsed.
-5. Click **Run scan**. Findings appear immediately in the dashboard as chunks complete.
-6. Optionally enable **Verify with identity swap**. Sectiv replays the selected success responses with User B's credentials and flags responses that still return User A's data. You are asked to confirm the request count first.
-7. Triage in **Dashboard**, then export an HTML, Markdown or JSON report.
-
-## How the AI review works
-
-The model does not issue requests by itself. Sectiv builds a prompt from:
-
-- the selected skill's review instructions,
-- the tester's identity context,
-- redacted captured HTTP request/response pairs, packed into chunks that fit the configured character budget.
-
-The system prompt requires a single JSON object, forbids inventing endpoints and treats captured traffic as untrusted data (prompt-injection defence). Sectiv parses the response defensively, deduplicates findings by fingerprint, and retries once with a stricter prompt if the model returns malformed JSON.
-
-The identity-swap check is separate and deterministic: Sectiv replaces the matching session cookie or authorization header with User B's value, sends the request through Burp, and compares status, length and response similarity. Findings are marked `active check` in the dashboard and include the exact request that was sent.
-
-## Data and privacy
-
-- State is stored at `~/.sectiv/state.json` and written atomically with `0600` permissions where the filesystem supports them.
-- The file contains settings, API keys, skills, the last identity context and all findings (including capped raw request/response excerpts). **It is not encrypted.** Use a dedicated API key and rotate it if the host is shared.
-- The state file is global to the Burp installation, not per project. Use export before switching engagements, and clear findings when appropriate.
-- Captured traffic is sent to the configured AI provider. Confirm that this is allowed for your engagement before scanning. Use **Settings → Scan behavior → Mask cookies and tokens** (on by default) and review the selected scope.
-- Identity-swap checks send real traffic with the second account's credentials. Only run them against systems you are authorized to test.
-
-## Project layout
-
-```
-src/main/kotlin/io/sectiv/burp/
-  SectivExtension.kt        Burp entry point
-  core/                     models, state, identity parsing, redaction, transcript
-  ai/                       prompt building, finding parser, provider HTTP client
-  scan/                     history collection, scan orchestration, identity swap
-  ui/                       custom Swing dashboard, scan, skills and settings tabs
-  report/                   HTML, Markdown and JSON reports
-src/test/kotlin/            unit, scan-pipeline and headless UI tests
-```
-
 ## Build from source (developers)
 
-Only needed if you want to compile the extension yourself. Requirements: JDK 21 and network access for the first Gradle run.
+Requires JDK 21.
 
 ```bash
 ./gradlew test          # unit + headless UI tests
-./gradlew shadowJar     # build the loadable extension
+./gradlew shadowJar     # builds build/libs/sectiv-1.0.0.jar
 ```
-
-The extension JAR is written to:
-
-```
-build/libs/sectiv-1.0.0.jar
-```
-
-The JAR bundles the Kotlin runtime and a relocated copy of Jackson. The Montoya API is compiled against but not bundled; Burp provides it at runtime.
 
 ## Limitations
 
-- This is an **AI-assisted review**, not a replacement for Burp Scanner or manual testing. Validate every finding before reporting it.
+- This is an AI-assisted review — validate every finding before reporting it.
 - The AI only reasons about the traffic you select; it cannot discover endpoints that are absent from that traffic.
-- Active identity-swap checking is a heuristic. A high-similarity response can still be a public or shared resource; the finding text tells you to confirm ownership.
-- Model names and endpoints change. If **Test connection** fails, update the model identifier in Settings.
-- AI calls can be slow or expensive. Use a focused scope and one skill at a time for large engagements.
-
-## Development notes
-
-- `./gradlew test` runs 40+ tests including redaction, identity parsing, prompt chunking, report escaping, persistence, the full scan pipeline with a fake model, and a headless Swing smoke test.
-- The UI uses no third-party look-and-feel. Colors adapt to Burp's dark/light theme via `UserInterface.currentTheme()`.
-- To add a provider preset, edit `defaultProviders()` in `core/Models.kt`. To add a built-in skill, edit `core/DefaultSkills.kt`.
