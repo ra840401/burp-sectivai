@@ -7,8 +7,14 @@ import io.sectiv.burp.core.Nodes
 import io.sectiv.burp.core.ProviderConfig
 import io.sectiv.burp.core.ProviderKind
 import io.sectiv.burp.core.Text
+import java.io.IOException
+import java.net.InetSocketAddress
+import java.net.Proxy
+import java.net.ProxySelector
+import java.net.SocketAddress
 import java.net.URI
 import java.net.http.HttpClient
+import java.net.http.HttpConnectTimeoutException
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.net.http.HttpTimeoutException
@@ -61,10 +67,7 @@ interface LlmGateway {
  * exposing /v1/chat/completions.
  */
 class LlmClient(
-    private val http: HttpClient = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(20))
-        .followRedirects(HttpClient.Redirect.NORMAL)
-        .build()
+    private val http: HttpClient = defaultHttpClient()
 ) : LlmGateway {
 
     override fun complete(
@@ -102,10 +105,22 @@ class LlmClient(
                 lastError = e
                 if (!e.retryable || attempt >= maxAttempts) throw e
                 sleep(backoffMillis(attempt, null), cancel)
+            } catch (e: HttpConnectTimeoutException) {
+                lastError = e
+                if (attempt >= maxAttempts) {
+                    throw LlmException(
+                        "Could not connect to ${provider.name}: connection timed out. Check your proxy/VPN, firewall and DNS, or verify the base URL.",
+                        retryable = true
+                    )
+                }
+                sleep(backoffMillis(attempt, null), cancel)
             } catch (e: HttpTimeoutException) {
                 lastError = e
                 if (attempt >= maxAttempts) {
-                    throw LlmException("Request to ${provider.name} timed out. Increase the timeout in Settings or use a smaller chunk size.", retryable = true)
+                    throw LlmException(
+                        "Request to ${provider.name} timed out after ${provider.timeoutSeconds}s. Increase the timeout in Settings, use a smaller chunk size, or check your proxy/VPN and base URL.",
+                        retryable = true
+                    )
                 }
                 sleep(backoffMillis(attempt, null), cancel)
             } catch (e: java.io.IOException) {
@@ -390,6 +405,45 @@ class LlmClient(
             val step = minOf(remaining, 200)
             Thread.sleep(step)
             remaining -= step
+        }
+    }
+
+    companion object {
+        private fun defaultHttpClient(): HttpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(20))
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .proxy(proxySelector())
+            .build()
+
+        /**
+         * Java's HttpClient does not read the standard http_proxy / https_proxy
+         * environment variables. curl does, which is why a provider can work in
+         * curl but time out inside Burp. Honour those variables explicitly.
+         */
+        private fun proxySelector(): ProxySelector {
+            val env = System.getenv()
+            val raw = env["https_proxy"] ?: env["HTTPS_PROXY"] ?: env["http_proxy"] ?: env["HTTP_PROXY"]
+            val proxy = parseProxy(raw)
+            return if (proxy != null) {
+                object : ProxySelector() {
+                    override fun select(uri: URI?): List<Proxy> = listOf(proxy)
+                    override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) = Unit
+                }
+            } else {
+                ProxySelector.getDefault()
+            }
+        }
+
+        private fun parseProxy(raw: String?): Proxy? {
+            if (raw.isNullOrBlank()) return null
+            var value = raw.trim()
+            if (!value.startsWith("http://") && !value.startsWith("https://")) {
+                value = "http://$value"
+            }
+            val uri = runCatching { URI(value) }.getOrNull() ?: return null
+            val host = uri.host ?: return null
+            val port = if (uri.port > 0) uri.port else 8080
+            return Proxy(Proxy.Type.HTTP, InetSocketAddress(host, port))
         }
     }
 }

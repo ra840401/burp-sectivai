@@ -628,28 +628,28 @@ class SeverityCard(
             g2.stroke = BasicStroke(1f)
             g2.drawRoundRect(0, 0, width - 1, height - 1, 13, 13)
 
-            g2.color = dot
-            g2.fillOval(16, 21, 6, 6)
-
             g2.font = SectivFonts.semibold(9.5f)
             g2.color = theme.severityFg(severity)
-            g2.drawString(severity.label.uppercase(), 28, 28)
+            g2.drawString(severity.label.uppercase(), 16, 34)
 
-            // Sparkline
-            var sx = width - 48
-            for (h in sparkHeights) {
-                g2.color = withAlpha(dot, 120)
-                g2.fillRoundRect(sx, 26 - h, 3, h, 2, 2)
-                sx += 5
-            }
+            // Alert triangle on the right, on the same line as the label
+            val cx = width - 24
+            val triX = intArrayOf(cx, cx - 6, cx + 6)
+            val triY = intArrayOf(22, 34, 34)
+            g2.color = dot
+            g2.fillPolygon(triX, triY, 3)
+            g2.color = theme.background
+            g2.stroke = BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+            g2.drawLine(cx, 26, cx, 30)
+            g2.fillOval(cx - 1, 31, 3, 3)
 
             g2.font = SectivFonts.bold(30f)
             g2.color = theme.text
-            g2.drawString(count.toString(), 16, 74)
+            g2.drawString(count.toString(), 16, 78)
 
             g2.font = SectivFonts.regular(10f)
             g2.color = theme.faint
-            g2.drawString(subtitle, 16, 93)
+            g2.drawString(subtitle, 16, 97)
         } finally {
             g2.dispose()
         }

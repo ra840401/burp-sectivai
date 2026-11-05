@@ -54,7 +54,7 @@ class FindingDetailPanel(
         isEditable = false
         isOpaque = true
         background = theme.surface
-        border = EmptyBorder(2, 2, 8, 8)
+        border = EmptyBorder(4, 16, 8, 12)
         putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
         font = theme.base
     }
@@ -124,9 +124,15 @@ class FindingDetailPanel(
             isOpaque = false
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             border = EmptyBorder(14, 16, 8, 16)
-            add(severityHolder)
-            add(Box.createVerticalStrut(8))
-            add(titleArea)
+            val titleRow = JPanel(BorderLayout(10, 0)).apply {
+                isOpaque = false
+                add(JPanel(BorderLayout()).apply {
+                    isOpaque = false
+                    add(severityHolder, BorderLayout.NORTH)
+                }, BorderLayout.WEST)
+                add(titleArea, BorderLayout.CENTER)
+            }
+            add(titleRow)
             add(Box.createVerticalStrut(6))
             add(endpointArea)
             add(Box.createVerticalStrut(6))
@@ -207,11 +213,8 @@ class FindingDetailPanel(
         severityHolder.revalidate()
         severityHolder.repaint()
 
-        titleArea.text = buildString {
-            append("[").append(finding.severity.label).append("] ")
-            append(finding.title.ifBlank { "Untitled finding" })
-            finding.cvss?.let { append(" · CVSS ").append(it) }
-        }
+        titleArea.text = finding.title.ifBlank { "Untitled finding" }
+        titleArea.rows = if (finding.title.length > 90) 2 else 1
         val endpoint = listOf(finding.method, finding.url).filter { it.isNotBlank() }.joinToString(" ")
         endpointArea.text = endpoint.ifBlank { "No endpoint recorded" }
         endpointArea.rows = if (endpoint.length > 110) 2 else 1

@@ -13,7 +13,7 @@
   <a href="https://sectiv.ai"><img alt="Website" src="https://img.shields.io/badge/Website-sectiv.ai-0B1115?style=for-the-badge&logo=google-chrome&logoColor=white"></a>
   <a href="https://www.youtube.com/@zack0x01"><img alt="YouTube" src="https://img.shields.io/badge/YouTube-zack0x01-FF0000?style=for-the-badge&logo=youtube&logoColor=white"></a>
   <a href="https://x.com/zack0x01_"><img alt="X" src="https://img.shields.io/badge/X-zack0x01_-000000?style=for-the-badge&logo=x&logoColor=white"></a>
-  <a href="https://www.instagram.com/zacl0x01/"><img alt="Instagram" src="https://img.shields.io/badge/Instagram-zacl0x01-E4405F?style=for-the-badge&logo=instagram&logoColor=white"></a>
+  <a href="https://www.instagram.com/zack0X01/"><img alt="Instagram" src="https://img.shields.io/badge/Instagram-zack0X01-E4405F?style=for-the-badge&logo=instagram&logoColor=white"></a>
   <a href="https://www.buymeacoffee.com/zack0x01"><img alt="Buy Me a Coffee" src="https://img.shields.io/badge/Buy_Me_a_Coffee-zack0x01-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black"></a>
 </p>
 
@@ -41,6 +41,29 @@ No JDK, no build — just load the JAR:
 
 > The JAR is compiled against the Montoya API `2026.7` and Java 21. Use a current Burp release; older releases may reject it.
 
+## Troubleshooting
+
+**"Request to DeepSeek timed out" (or any provider) but curl works**
+
+- The extension now honours the standard `http_proxy` / `https_proxy` environment variables. If your traffic must go through a proxy, export them before starting Burp:
+  ```bash
+  export https_proxy=http://127.0.0.1:8080
+  ```
+- If you use a VPN, make sure the AI provider is reachable through it.
+- Try lowering **Prompt chunk size** and raising **Timeout (s)** in Settings.
+- Double-check the base URL — DeepSeek should be `https://api.deepseek.com/v1/chat/completions`.
+
+**"Failed · ..." on Test connection**
+
+Read the exact reason after `Failed ·`:
+
+- `401 / 403` → API key is wrong or missing.
+- `404` → base URL or model name is wrong.
+- `400` → model name or advanced request options are wrong.
+- `timed out` → network/proxy issue (see above).
+
+Make sure the provider kind matches the API: DeepSeek/OpenAI/GLM/etc. use OpenAI-compatible chat completions; Claude uses the Anthropic Messages API.
+
 ## Features
 
 - **Severity dashboard** — Critical, High, Medium, Low and Info counters, filterable tables, search, status triage (Open / Triaged / False positive / Resolved) and HTML / Markdown / JSON export.
@@ -52,6 +75,16 @@ No JDK, no build — just load the JAR:
 - **Multiple providers** — DeepSeek, Claude (Anthropic), OpenAI, GLM (Zhipu), z.ai, OpenRouter, local Ollama and any custom OpenAI-compatible endpoint.
 - **Privacy controls** — cookie values, authorization headers, passwords, API keys and JWTs are masked before traffic is sent to the model. Email addresses are deliberately kept because they are a primary BOLA/IDOR signal. Masking can be disabled in Settings.
 - **Safe defaults** — active identity-swap checks are off by default, require explicit confirmation, only use GET/HEAD/OPTIONS unless enabled otherwise, and are rate-limited.
+
+## Skills
+
+The built-in skills are **demo examples** — they show the format and cover common bug classes, but you should still add your own skills tailored to your target application.
+
+**For best results**, end every skill body with a validation instruction, for example:
+
+> Before reporting a finding, confirm it against the captured evidence and explain what would validate it. If you cannot confirm it, mark it tentative or leave it out.
+
+That one line eliminates most false positives.
 
 ## Use
 

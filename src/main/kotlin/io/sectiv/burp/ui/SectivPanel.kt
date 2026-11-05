@@ -80,14 +80,15 @@ class SectivPanel(
             background = theme.background
             border = BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, theme.borderSoft),
-                EmptyBorder(0, 20, 0, 20)
+                EmptyBorder(0, 22, 0, 22)
             )
             preferredSize = Dimension(0, 70)
         }
 
-        val left = JPanel(FlowLayout(FlowLayout.LEFT, 20, 13)).apply {
+        val left = JPanel(FlowLayout(FlowLayout.LEFT, 0, 13)).apply {
             isOpaque = false
             add(brand())
+            add(Box.createHorizontalStrut(14))
             add(nav.navBar)
         }
 
@@ -104,7 +105,7 @@ class SectivPanel(
         return header
     }
 
-    private fun brand(): JPanel = JPanel(FlowLayout(FlowLayout.LEFT, 11, 0)).apply {
+    private fun brand(): JPanel = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
         isOpaque = false
         add(LogoMark(theme))
         val text = JPanel().apply {
